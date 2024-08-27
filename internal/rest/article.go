@@ -27,6 +27,7 @@ type ArticleService interface {
 	GetByTitle(ctx context.Context, title string) (domain.Article, error)
 	Store(context.Context, *domain.Article) error
 	Delete(ctx context.Context, id int64) error
+	Calculate(ctx context.Context, weight float64, height float64) (res domain.BmiReponse, err error)
 }
 
 // ArticleHandler  represent the httphandler for article
@@ -45,6 +46,27 @@ func NewArticleHandler(e *echo.Echo, svc ArticleService) {
 	e.POST("/articles", handler.Store)
 	e.GET("/articles/:id", handler.GetByID)
 	e.DELETE("/articles/:id", handler.Delete)
+	e.POST("/bmi", handler.Calculate)
+}
+
+func (a *ArticleHandler) Calculate(c echo.Context) error {
+	var bmiReq domain.BmiRequest
+	err := c.Bind(&bmiReq)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	validate := validator.New()
+	err = validate.Struct(bmiReq)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	ctx := c.Request().Context()
+
+	res, err := a.Service.Calculate(ctx, bmiReq.Weight, bmiReq.Height)
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, res)
 }
 
 // FetchArticle will fetch the article based on given params

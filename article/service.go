@@ -2,6 +2,7 @@ package article
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -164,4 +165,20 @@ func (a *Service) Delete(ctx context.Context, id int64) (err error) {
 		return domain.ErrNotFound
 	}
 	return a.articleRepo.Delete(ctx, id)
+}
+
+func (a *Service) Calculate(ctx context.Context, weight float64, height float64) (res domain.BmiReponse, err error) {
+	res.Score = weight / (height * height)
+	if res.Score == 0 {
+		return res, errors.New("Invalid score calculate")
+	}
+	res.Name = "Underweight"
+	if res.Score >= 18.5 && res.Score < 24.9 {
+		res.Name = "Normal weight"
+	} else if res.Score >= 25 && res.Score < 29.9 {
+		res.Name = "Overweight"
+	} else if res.Score > 30 {
+		res.Name = "Obesity"
+	}
+	return res, nil
 }
