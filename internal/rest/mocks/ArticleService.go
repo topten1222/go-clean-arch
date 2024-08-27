@@ -14,6 +14,16 @@ type ArticleService struct {
 	mock.Mock
 }
 
+func (_m *ArticleService) Calculate(ctx context.Context, weight float64, height float64) (res domain.BmiReponse, err error) {
+	ret := _m.Called(ctx, weight, height)
+	if len(ret) == 0 {
+		panic("no return value specified for Calculate")
+	}
+	var r0 domain.BmiReponse
+	var r1 error
+	return r0, r1
+}
+
 // Delete provides a mock function with given fields: ctx, id
 func (_m *ArticleService) Delete(ctx context.Context, id int64) error {
 	ret := _m.Called(ctx, id)
